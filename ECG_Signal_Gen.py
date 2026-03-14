@@ -1,5 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
+from scipy.signal import butter, filtfilt, find_peaks
+from scipy.fft import fft, fftfreq 
 import pandas as pd 
 # 1. ECG Signal Generator Function
 def generate_ecg(duration=10, fs=250, heart_rate=72):
@@ -69,3 +71,23 @@ data = np.column_stack((t, noisy_ecg))
 df = pd.DataFrame(data, columns=["time","signal"])
 
 df.to_csv("ecg_signal.csv", index=False)
+
+#Part II: Low Pass Filtering 
+def lowpass_filter(signal,fs,cutoff_frequency=40, order = 4):
+    nyquist_condition=0.5*fs
+    normal_cutoff=cutoff_frequency/nyquist_condition
+    b,a = butter(order,normal_cutoff,btype ='low')
+    filtered_signal=filtfilt(b,a,noisy_ecg)
+    return filtered_signal 
+filtered_ecg = lowpass_filter(noisy_ecg,fs=250)
+
+
+plt.plot(t, clean_ecg, label="Clean ECG")
+plt.plot(t, noisy_ecg, label="Noisy ECG")
+plt.plot(t, filtered_ecg,label="Lowpass Filtered ECG")
+plt.xlabel("Time (s)")
+plt.ylabel("Amplitude")
+plt.title("Raw and Lowpass filtered signal ")
+plt.legend()
+
+plt.show()
